@@ -217,10 +217,20 @@ brew install mosquitto
 printf 'listener 1883 0.0.0.0\nallow_anonymous true\n' > ~/mosquitto-ota.conf
 ```
 
-**1.3 Note down the workstation's IP address. This is `<WS_IP>` from here on:**
+**1.3 Note down the workstation's address. This is `<WS_IP>` from here on.** Type the real value, not the literal text `<WS_IP>`.
 
 ```bash
-ipconfig getifaddr en0
+ipconfig getifaddr en0          # e.g. 172.20.10.6 (changes when you switch network!)
+scutil --get LocalHostName      # e.g. MacBookS-Pro -> use MacBookS-Pro.local on the Pi
+```
+
+Prefer the hostname (`MacBookS-Pro.local`), because it keeps working when the IP changes. If it doesn't resolve on the Pi, use the IP. Check from the Pi with `ping -c 2 MacBookS-Pro.local`.
+
+**1.3b Let Mosquitto through the macOS firewall.** If the firewall is on, it silently blocks the Pi, which then shows `Connection timed out`.
+
+```bash
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add "$(readlink -f /opt/homebrew/sbin/mosquitto)"
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblockapp "$(readlink -f /opt/homebrew/sbin/mosquitto)"
 ```
 
 **1.4 Make sure nothing else is already using port 1883:**
@@ -488,7 +498,9 @@ python3 run.py --broker localhost
 
 | Symptom | Cause / fix |
 |---|---|
-| The Pi shows `Connection refused` or hangs on connect | The broker is only listening on localhost: check that you started it with `~/mosquitto-ota.conf` (step 1.5). Also check that the macOS firewall allows mosquitto and that `<WS_IP>` is correct. |
+| The Pi shows `Connection timed out` | Either the IP is wrong (it changes per network, so re-run `ipconfig getifaddr en0` on the Mac), or the macOS firewall is blocking Mosquitto (step 1.3b). |
+| The Pi shows `Connection refused` | The broker is only listening on localhost: start it with `~/mosquitto-ota.conf` (step 1.5). |
+| `-h localhost` on the Pi gives `not authorised` | That's a different broker running *on the Pi itself*, with authentication enabled. It isn't used here; always point the Pi at the Mac (`-h <WS_IP>`). |
 | `ERROR: no OTA client online. Start ota_client.py on the Pi first` | The client isn't running, or is connected to a different broker. Start step 6 first, and make sure it prints `Connected to ...`. |
 | `could not connect to MQTT broker localhost:1883` | The broker isn't running on the workstation (step 1.5). |
 | `ModuleNotFoundError: No module named 'paho'` | Workstation: run `source .venv/bin/activate`. Pi: run `sudo apt install python3-paho-mqtt`. |
