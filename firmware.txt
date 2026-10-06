@@ -1,0 +1,35 @@
+=== SIMULATED FIRMWARE IMAGE ===
+Firmware: aau-iot-sensor-node
+Version: 1.0.0
+Target: Raspberry Pi 4 (lab OTA test device)
+Build date: 2026-10-06
+
+NOTE: This text file only represents a firmware image for the OTA
+integrity experiment (IoT & Cloud Security, Mini Project 1).
+It is never flashed, installed or executed on the device.
+
+[boot]
+BOOT_DELAY_MS=250
+WATCHDOG=enabled
+WATCHDOG_TIMEOUT_S=30
+
+[network]
+WIFI_MODE=station
+MQTT_BROKER_PORT=1883
+MQTT_KEEPALIVE_S=30
+TELNET_DEBUG=disabled
+
+[sensors]
+TEMPERATURE_SAMPLE_INTERVAL_S=10
+HUMIDITY_SAMPLE_INTERVAL_S=10
+CALIBRATION_OFFSET_C=-0.4
+
+[security]
+SECURE_BOOT=enabled
+OTA_REQUIRE_VERIFICATION=true
+
+[changelog]
+1.0.0 - Initial release of the sensor node firmware.
+      - Added watchdog supervision of the sampling loop.
+      - Disabled the telnet debug interface by default.
+      - Added Merkle-tree verification of OTA updates.
